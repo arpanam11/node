@@ -1,0 +1,10 @@
+/* Custom CSS for the active navbar link */
+.navbar-nav .nav-link.active{
+  background-color: #007bff !important; 
+  color: #ffffff !important;           
+  border-radius: 0.25rem;
+  padding: 10px 20px;
+}
+.nav-item{
+    padding: 10px 20px !important;
+}
