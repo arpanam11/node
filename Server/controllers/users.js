@@ -15,5 +15,19 @@ res.send("User Added Successfully")
 //get single user with id
 export const getUser = (req,res)=>{
     const singleUser = users.filter((user) => user.id === req.params.id);
-    res.send(singleUser);
+    res.send(singleUser);   
 }
+// Delete a user
+export const deleteUser = (req,res)=>{
+    users = users.filter((user) => user.id !== req.params.id);
+    res.send("User Deleted Successfully");
+}    
+
+export const updateUser = (req,res)=>{
+    const user = users.find((user) => user.id === req.params.id);
+    user.name = req.body.name;
+    user.email = req.body.email;
+    user.contact = req.body.contact;
+    res.send("User Updated Successfully");
+   
+}   
