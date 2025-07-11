@@ -1,47 +1,79 @@
-import React from 'react'; 
+// This file remains largely the same as your last correct version
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+
 const Homepage = () => {
-  const [data, setData] = useState([]); 
+  const [data, setData] = useState([]);
+  const navigate = useNavigate();
+
   useEffect(() => {
     getUsers();
-  }, []); 
+  }, []);
+
   const getUsers = async () => {
     try {
       const response = await axios.get('http://localhost:5000/users');
       if (response.status === 200) {
-        setData(response.data); 
+        setData(response.data);
+      } else {
+        toast.error("Failed to fetch users: " + response.statusText);
       }
     } catch (error) {
-      console.error("Error fetching users:", error); 
+      console.error("Error fetching users:", error);
+      toast.error('Error fetching users. Please check server.');
     }
-  }; 
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        const response = await axios.delete(`http://localhost:5000/user/${id}`);
+        if (response.status === 200) {
+          toast.success("User deleted successfully!");
+          getUsers();
+        } else {
+          toast.error("Failed to delete user: " + response.statusText);
+        }
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        toast.error('Failed to delete user. Please try again.');
+      }
+    }
+  };
+
   return (
-    <div className="container mt-4"> 
-      <h5 className="text-center mb-4">User List</h5> 
+    <div className="container mt-4">
+      <h5 className="text-center mb-4">User List</h5>
       {data.length > 0 ? (
-        <table className="table table-striped table-bordered table-hover"> 
-          <thead className="table-light"> 
+        <table className="table table-striped table-bordered table-hover">
+          <thead className="table-light">
             <tr>
-              <th>No.</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Contact</th>
-              <th>Action</th>
+              <th style={{ width: '5%' }}>No.</th>
+              <th style={{ width: '25%' }}>Name</th>
+              <th style={{ width: '25%' }}>Email</th>
+              <th style={{ width: '20%' }}>Contact</th>
+              <th style={{ width: '25%' }}>Action</th>
             </tr>
           </thead>
           <tbody>
             {data.map((user, index) => (
-              <tr key={user.id || index}> 
+              <tr key={user.id || index}>
                 <td>{index + 1}</td>
                 <td>{user.name}</td>
                 <td>{user.email}</td>
                 <td>{user.contact}</td>
                 <td>
-                 <Link to={`/view/${user.id}`}><button type="button" class="btn btn-outline-success m-1">View</button></Link>
-                  <Link to={`/edit/${user.id}`}><button type="button" class="btn btn-outline-primary m-1">Edit</button></Link>
-                  <Link to={`/delete/${user.id}`}><button type="button" class="btn btn-outline-danger m-1">Delete</button></Link>
+                  <Link to={`/view/${user.id}`} className="btn btn-outline-success btn-sm m-1">View</Link>
+                  <Link to={`/edit/${user.id}`} className="btn btn-outline-primary btn-sm m-1">Edit</Link>
+                  <button
+                    type="button"
+                    className="btn btn-outline-danger btn-sm m-1"
+                    onClick={() => handleDelete(user.id)}
+                  >
+                    Delete
+                  </button>
                 </td>
               </tr>
             ))}
@@ -52,6 +84,6 @@ const Homepage = () => {
       )}
     </div>
   );
-}; // <-- Missing closing brace for the Homepage component
+};
 
-export default Homepage; // Export the corrected component name
+export default Homepage;

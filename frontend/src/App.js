@@ -1,6 +1,6 @@
 import {BrowserRouter,Route, Routes} from 'react-router-dom'
 import React from 'react';
-import View from './pages/view';  
+import View from './pages/addEdit';  
 import AddEdit from './pages/addEdit';
 import About from './pages/about';
 import Homepage from './pages/homepage';
@@ -18,7 +18,7 @@ function App() {
         <Route index element={<Homepage />} />
         <Route path="/view/:id" element={<View />} />
         <Route path="/add" element={<AddEdit />} />
-        <Route path="/update/:id" element={<AddEdit />} />
+        <Route path="/edit/:id" element={<AddEdit />} />
         <Route path="/about" element={<About />} />
         
       </Routes>
