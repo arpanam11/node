@@ -19,16 +19,16 @@ const Homepage = () => {
   }; 
   return (
     <div className="container mt-4"> 
-      <h1 className="text-center mb-4">User List</h1> 
+      <h5 className="text-center mb-4">User List</h5> 
       {data.length > 0 ? (
         <table className="table table-striped table-bordered table-hover"> 
-          <thead className="table-dark"> 
+          <thead className="table-light"> 
             <tr>
-              <th scope="col">No.</th>
-              <th scope="col">Name</th>
-              <th scope="col">Email</th>
-              <th scope="col">Contact</th>
-              <th scope="col">Action</th>
+              <th>No.</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Contact</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -39,9 +39,9 @@ const Homepage = () => {
                 <td>{user.email}</td>
                 <td>{user.contact}</td>
                 <td>
-                 <Link to={`/view/${user.id}`}><button type="button" class="btn btn-success">View</button></Link>
-                  <Link to={`/edit/${user.id}`}><button type="button" class="btn btn-primary">Edit</button></Link>
-                  <Link to={`/delete/${user.id}`}><button type="button" class="btn btn-danger">Delete</button></Link>
+                 <Link to={`/view/${user.id}`}><button type="button" class="btn btn-outline-success m-1">View</button></Link>
+                  <Link to={`/edit/${user.id}`}><button type="button" class="btn btn-outline-primary m-1">Edit</button></Link>
+                  <Link to={`/delete/${user.id}`}><button type="button" class="btn btn-outline-danger m-1">Delete</button></Link>
                 </td>
               </tr>
             ))}
