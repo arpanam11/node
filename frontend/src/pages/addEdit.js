@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
 import { toast } from 'react-toastify';
+import { Link } from 'react-router-dom';
 
-// Accept a 'currentMode' prop from the router
-const AddEdit = ({ currentMode }) => { // Renamed 'mode' to 'currentMode' to avoid conflict with `editing` state
+const AddEditUser = () => { // Renamed from AddUser to AddEditUser
   const initialState = {
     name: '',
     email: '',
@@ -12,85 +12,60 @@ const AddEdit = ({ currentMode }) => { // Renamed 'mode' to 'currentMode' to avo
   };
 
   const [user, setUser] = useState(initialState);
-  const [editing, setEditing] = useState(false); // Still useful for distinguishing POST vs PUT
-  const [viewing, setViewing] = useState(false); // New state for view mode
-
   const { name, email, contact } = user;
 
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id } = useParams(); // Get the 'id' from the URL parameters
 
+  // useEffect to fetch user data if 'id' is present (for editing)
   useEffect(() => {
-    // Determine mode based on the prop passed from Router
-    if (currentMode === 'view') {
-      setViewing(true);
-      setEditing(false); // Ensure editing is false in view mode
-    } else if (currentMode === 'edit') {
-      setEditing(true);
-      setViewing(false); // Ensure viewing is false in edit mode
-    } else { // currentMode === 'add'
-      setEditing(false);
-      setViewing(false);
-      setUser(initialState); // Clear form for add mode
-    }
-
-    // Fetch user data if in edit or view mode (i.e., if an ID exists)
-    if (id) {
-      getUser(id);
+    if (id) { // Only fetch if an ID exists in the URL (means we are in edit mode)
+      const getSingleUser = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5000/user/${id}`);
+          if (response.status === 200) {
+            // Set the form state with the fetched user data
+            setUser(response.data[0]); // Assuming response.data is the single user object
+          } else {
+            toast.error("Failed to fetch user data for editing.");
+          }
+        } catch (error) {
+          console.error("Error fetching single user:", error);
+          toast.error('Error fetching user data. Please check server is running.');
+        }
+      };
+      getSingleUser();
     } else {
-      setUser(initialState); // Clear form if ID is not present (e.g., /add)
+      // If no ID, ensure the form is cleared for adding a new user
+      setUser(initialState);
     }
-  }, [id, currentMode]); // Re-run effect if ID or currentMode changes
-
-  const getUser = async (userId) => {
-    try {
-      const response = await axios.get(`http://localhost:5000/user/${userId}`);
-      if (response.status === 200) {
-        setUser(response.data);
-      } else {
-        toast.error("User not found or error fetching data.");
-        navigate('/'); // Redirect if user doesn't exist
-      }
-    } catch (error) {
-      console.error("Error fetching user for edit/view:", error);
-      toast.error('Error fetching user data. Please try again.');
-      navigate('/');
-    }
-  };
+  }, [id]); // Rerun this effect whenever the 'id' parameter changes
 
   const handleInputChange = (e) => {
-    // Only allow input changes if not in view mode
-    if (!viewing) {
-      const { name, value } = e.target;
-      setUser({ ...user, [name]: value });
-    }
+    const { name, value } = e.target;
+    setUser({ ...user, [name]: value });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault();
 
-    // If in view mode, prevent submission (or make this a back button action)
-    if (viewing) {
-      navigate('/'); // In view mode, clicking submit could just go back
-      return;
-    }
-
-    // Validation for Add/Edit modes
     if (!name || !email || !contact) {
       toast.error('Please fill in all fields.');
       return;
     }
 
     try {
-      if (editing) {
+      if (id) {
+        // EDIT existing user
         const response = await axios.put(`http://localhost:5000/user/${id}`, user);
         if (response.status === 200) {
-          toast.success('User updated successfully!');
+          toast.success("User updated successfully!");
           navigate('/');
         } else {
           toast.error("Failed to update user: " + response.statusText);
         }
-      } else { // Adding new user
+      } else {
+        // ADD new user
         const response = await axios.post('http://localhost:5000/user', user);
         if (response.status === 200) {
           toast.success("User added successfully!");
@@ -100,22 +75,18 @@ const AddEdit = ({ currentMode }) => { // Renamed 'mode' to 'currentMode' to avo
         }
       }
     } catch (error) {
-      console.error("Error submitting user data:", error);
+      console.error("Error saving user data:", error);
       toast.error('Failed to save user. Please try again.');
     }
   };
 
-  // Determine the title based on the mode
-  const formTitle = viewing ? 'User Details' : (editing ? 'Edit User' : 'Add New User');
-  // Determine button text/visibility
-  const buttonText = viewing ? 'Go Back' : (editing ? 'Update User' : 'Add User');
-
   return (
     <div className="container mt-4">
-      <h5 className="text-center mb-4">{formTitle}</h5>
+      <h5 className="text-center mb-4">{id ? 'Edit User' : 'Add New User'}</h5>
       <div className="row">
         <div className="col-md-6 offset-md-3">
           <form onSubmit={handleSubmit}>
+            {/* Name Input Field */}
             <div className="mb-3">
               <label htmlFor="name" className="form-label">Name</label>
               <input
@@ -123,12 +94,12 @@ const AddEdit = ({ currentMode }) => { // Renamed 'mode' to 'currentMode' to avo
                 className="form-control"
                 id="name"
                 name="name"
-                value={name}
+                value={name} // This will be pre-filled
                 onChange={handleInputChange}
-                readOnly={viewing} // Set to readOnly if in view mode
-                required={!viewing} // Only required if not in view mode
+                required
               />
             </div>
+            {/* Email Input Field */}
             <div className="mb-3">
               <label htmlFor="email" className="form-label">Email</label>
               <input
@@ -136,12 +107,12 @@ const AddEdit = ({ currentMode }) => { // Renamed 'mode' to 'currentMode' to avo
                 className="form-control"
                 id="email"
                 name="email"
-                value={email}
+                value={email} // This will be pre-filled
                 onChange={handleInputChange}
-                readOnly={viewing} // Set to readOnly if in view mode
-                required={!viewing}
+                required
               />
             </div>
+            {/* Contact Input Field */}
             <div className="mb-3">
               <label htmlFor="contact" className="form-label">Contact</label>
               <input
@@ -149,24 +120,16 @@ const AddEdit = ({ currentMode }) => { // Renamed 'mode' to 'currentMode' to avo
                 className="form-control"
                 id="contact"
                 name="contact"
-                value={contact}
+                value={contact} // This will be pre-filled
                 onChange={handleInputChange}
-                readOnly={viewing} // Set to readOnly if in view mode
-                required={!viewing}
+                required
               />
             </div>
-            <button type="submit" className={`btn ${viewing ? 'btn-secondary' : 'btn-primary'}`}>
-              {buttonText}
+            {/* Submit Button */}
+            <button type="submit" className="btn btn-primary">
+              {id ? 'Update User' : 'Add User'} {/* Button text changes */}
             </button>
-            {viewing && ( // Add a separate back button if you want both "Go Back" and "Edit" functionality in view mode
-              <button
-                type="button"
-                className="btn btn-info ms-2"
-                onClick={() => navigate(`/edit/${id}`)}
-              >
-                Edit Details
-              </button>
-            )}
+            <Link to="/" className="btn btn-secondary ms-2">Cancel</Link> {/* Add a cancel button */}
           </form>
         </div>
       </div>
@@ -174,4 +137,4 @@ const AddEdit = ({ currentMode }) => { // Renamed 'mode' to 'currentMode' to avo
   );
 };
 
-export default AddEdit;
+export default AddEditUser; // Export the new component name

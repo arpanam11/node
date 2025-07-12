@@ -1,4 +1,3 @@
-// This file remains largely the same as your last correct version
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
@@ -8,10 +7,19 @@ const Homepage = () => {
   const [data, setData] = useState([]);
   const navigate = useNavigate();
 
+  // State for View Modal
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [viewedUser, setViewedUser] = useState([]);
+
+  // State for Delete Confirmation Modal
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [userToDeleteId, setUserToDeleteId] = useState(null);
+
   useEffect(() => {
     getUsers();
   }, []);
 
+  // Function to fetch all users from the API
   const getUsers = async () => {
     try {
       const response = await axios.get('http://localhost:5000/users');
@@ -22,30 +30,74 @@ const Homepage = () => {
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      toast.error('Error fetching users. Please check server.');
+      toast.error('Error fetching users. Please check server is running.');
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+  // Function to handle opening the view modal and fetching user data
+  const handleView = async (id) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/user/${id}`);
+      if (response.status === 200) {
+        // --- CORRECTED ORDER ---
+        setViewedUser(response.data[0]); // Set the user data FIRST
+        setShowViewModal(true);       // THEN open the modal
+      } else {
+        toast.error("User not found or error fetching data.");
+      }
+    } catch (error) {
+      console.error("Error fetching user for view modal:", error);
+      toast.error('Error fetching user data for view. Please try again.');
+    }
+  };
+
+  // Function to close the view modal
+  const handleCloseViewModal = () => {
+    setShowViewModal(false);
+    setViewedUser(null); // Clear viewed user data
+  };
+
+  // Function to initiate the delete confirmation modal
+  const handleDeleteClick = (id) => {
+    setUserToDeleteId(id);
+    setShowDeleteConfirmModal(true);
+  };
+
+  // Function to confirm and proceed with deletion
+  const confirmDelete = async () => {
+    if (userToDeleteId) {
       try {
-        const response = await axios.delete(`http://localhost:5000/user/${id}`);
+        const response = await axios.delete(`http://localhost:5000/user/${userToDeleteId}`);
         if (response.status === 200) {
           toast.success("User deleted successfully!");
-          getUsers();
+          getUsers(); // Refresh the user list
         } else {
           toast.error("Failed to delete user: " + response.statusText);
         }
       } catch (error) {
         console.error("Error deleting user:", error);
         toast.error('Failed to delete user. Please try again.');
+      } finally {
+        setShowDeleteConfirmModal(false); // Close modal regardless of success/failure
+        setUserToDeleteId(null); // Clear the ID
       }
     }
+  };
+
+  // Function to cancel deletion
+  const cancelDelete = () => {
+    setShowDeleteConfirmModal(false);
+    setUserToDeleteId(null);
   };
 
   return (
     <div className="container mt-4">
       <h5 className="text-center mb-4">User List</h5>
+      {/* Add User button */}
+      <div className="d-flex justify-content-end mb-3">
+        <Link to="/add" className="btn btn-success">Add New User</Link>
+      </div>
+
       {data.length > 0 ? (
         <table className="table table-striped table-bordered table-hover">
           <thead className="table-light">
@@ -65,12 +117,19 @@ const Homepage = () => {
                 <td>{user.email}</td>
                 <td>{user.contact}</td>
                 <td>
-                  <Link to={`/view/${user.id}`} className="btn btn-outline-success btn-sm m-1">View</Link>
+                  {/* Changed Link to button for modal view */}
+                  <button
+                    type="button"
+                    className="btn btn-outline-success btn-sm m-1"
+                    onClick={() => handleView(user.id)}
+                  >
+                    View
+                  </button>
                   <Link to={`/edit/${user.id}`} className="btn btn-outline-primary btn-sm m-1">Edit</Link>
                   <button
                     type="button"
                     className="btn btn-outline-danger btn-sm m-1"
-                    onClick={() => handleDelete(user.id)}
+                    onClick={() => handleDeleteClick(user.id)} // Use new handler for delete
                   >
                     Delete
                   </button>
@@ -81,6 +140,51 @@ const Homepage = () => {
         </table>
       ) : (
         <p className="text-center">No users found or data is loading...</p>
+      )}
+
+      {/* View User Details Modal */}
+      {showViewModal && viewedUser && (
+        <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content rounded-lg shadow-lg">
+              <div className="modal-header bg-primary text-white rounded-t-lg">
+                <h5 className="modal-title">User Details</h5>
+                <button type="button" className="btn-close btn-close-white" aria-label="Close" onClick={handleCloseViewModal}></button>
+              </div>
+              <div className="modal-body p-4">
+                <p><strong>ID:</strong> {viewedUser.id}</p>
+                <p><strong>Name:</strong> {viewedUser.name}</p>
+                <p><strong>Email:</strong> {viewedUser.email}</p>
+                <p><strong>Contact:</strong> {viewedUser.contact}</p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={handleCloseViewModal}>Close</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && (
+        <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content rounded-lg shadow-lg">
+              <div className="modal-header bg-warning text-dark rounded-t-lg">
+                <h5 className="modal-title">Confirm Deletion</h5>
+                <button type="button" className="btn-close" aria-label="Close" onClick={cancelDelete}></button>
+              </div>
+              <div className="modal-body p-4">
+                <p>Are you sure you want to delete this user?</p>
+                <p>This action cannot be undone.</p>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" onClick={cancelDelete}>Cancel</button>
+                <button type="button" className="btn btn-danger" onClick={confirmDelete}>Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

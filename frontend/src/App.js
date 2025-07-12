@@ -17,8 +17,8 @@ function App() {
       <Routes>
         <Route index element={<Homepage />} />
         <Route path="/view/:id" element={<View />} />
-        <Route path="/add" element={<AddEdit />} />
-        <Route path="/edit/:id" element={<AddEdit />} />
+        <Route path="/add" element={<AddEdit currentMode="add"/>} />
+        <Route path="/edit/:id" element={<AddEdit  currentMode="edit"/>} />
         <Route path="/about" element={<About />} />
         
       </Routes>
