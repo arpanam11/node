@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate, useParams } from 'react-router-dom'; // Import useParams
+import { useNavigate, useParams } from 'react-router-dom'; 
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 
-const AddEditUser = () => { // Renamed from AddUser to AddEditUser
+const AddEditUser = () => {
   const initialState = {
     name: '',
     email: '',
@@ -15,17 +15,15 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
   const { name, email, contact } = user;
 
   const navigate = useNavigate();
-  const { id } = useParams(); // Get the 'id' from the URL parameters
+  const { id } = useParams(); 
 
-  // useEffect to fetch user data if 'id' is present (for editing)
   useEffect(() => {
-    if (id) { // Only fetch if an ID exists in the URL (means we are in edit mode)
+    if (id) { 
       const getSingleUser = async () => {
         try {
           const response = await axios.get(`http://localhost:5000/user/${id}`);
           if (response.status === 200) {
-            // Set the form state with the fetched user data
-            setUser(response.data[0]); // Assuming response.data is the single user object
+            setUser(response.data[0]); 
           } else {
             toast.error("Failed to fetch user data for editing.");
           }
@@ -36,10 +34,9 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
       };
       getSingleUser();
     } else {
-      // If no ID, ensure the form is cleared for adding a new user
       setUser(initialState);
     }
-  }, [id]); // Rerun this effect whenever the 'id' parameter changes
+  }, [id]); 
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -56,7 +53,6 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
 
     try {
       if (id) {
-        // EDIT existing user
         const response = await axios.put(`http://localhost:5000/user/${id}`, user);
         if (response.status === 200) {
           toast.success("User updated successfully!");
@@ -65,7 +61,6 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
           toast.error("Failed to update user: " + response.statusText);
         }
       } else {
-        // ADD new user
         const response = await axios.post('http://localhost:5000/user', user);
         if (response.status === 200) {
           toast.success("User added successfully!");
@@ -86,7 +81,6 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
       <div className="row">
         <div className="col-md-6 offset-md-3">
           <form onSubmit={handleSubmit}>
-            {/* Name Input Field */}
             <div className="mb-3">
               <label htmlFor="name" className="form-label">Name</label>
               <input
@@ -94,12 +88,11 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
                 className="form-control"
                 id="name"
                 name="name"
-                value={name} // This will be pre-filled
+                value={name} 
                 onChange={handleInputChange}
                 required
               />
             </div>
-            {/* Email Input Field */}
             <div className="mb-3">
               <label htmlFor="email" className="form-label">Email</label>
               <input
@@ -107,12 +100,11 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
                 className="form-control"
                 id="email"
                 name="email"
-                value={email} // This will be pre-filled
+                value={email} 
                 onChange={handleInputChange}
                 required
               />
             </div>
-            {/* Contact Input Field */}
             <div className="mb-3">
               <label htmlFor="contact" className="form-label">Contact</label>
               <input
@@ -120,16 +112,15 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
                 className="form-control"
                 id="contact"
                 name="contact"
-                value={contact} // This will be pre-filled
+                value={contact} 
                 onChange={handleInputChange}
                 required
               />
             </div>
-            {/* Submit Button */}
             <button type="submit" className="btn btn-primary">
-              {id ? 'Update User' : 'Add User'} {/* Button text changes */}
+              {id ? 'Update User' : 'Add User'} 
             </button>
-            <Link to="/" className="btn btn-secondary ms-2">Cancel</Link> {/* Add a cancel button */}
+            <Link to="/" className="btn btn-secondary ms-2">Cancel</Link> 
           </form>
         </div>
       </div>
@@ -137,4 +128,4 @@ const AddEditUser = () => { // Renamed from AddUser to AddEditUser
   );
 };
 
-export default AddEditUser; // Export the new component name
+export default AddEditUser; 

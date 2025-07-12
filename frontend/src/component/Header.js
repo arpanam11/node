@@ -1,8 +1,8 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom'; // Import useLocation
-import './Header.css'; // Import your custom CSS for styling
+import { Link, useLocation } from 'react-router-dom'; 
+import './Header.css'; 
 const Header = () => {
-  const location = useLocation(); // Get the current location object
+  const location = useLocation(); 
 
   return (
     <header>
@@ -10,8 +10,6 @@ const Header = () => {
       <div className="header">
         <nav className="navbar navbar-expand-lg navbar-light bg-light">
           <div className="container-fluid">
-            {/* Optional: Add a Navbar Brand if you want one for the "User Management System" */}
-            {/* <Link className="navbar-brand" to="/">User Management System</Link> */}
             <button
               className="navbar-toggler"
               type="button"
@@ -26,10 +24,9 @@ const Header = () => {
             <div className="collapse navbar-collapse" id="navbarNav">
               <ul className="navbar-nav ms-auto">
                 <li className="nav-item">
-                  {/* Conditionally apply 'active' class based on location.pathname */}
                   <Link
                     className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-                    aria-current={location.pathname === '/' ? 'page' : undefined} // For accessibility
+                    aria-current={location.pathname === '/' ? 'page' : undefined} 
                     to="/"
                   >
                     Home
